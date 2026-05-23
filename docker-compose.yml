@@ -1,0 +1,104 @@
+# docker-compose.yml
+
+version: "3.9"
+
+# ── Services ────────────────────────────────────────────────────────────────────
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine        # alpine = smallest postgres image
+    container_name: devops-db
+    environment:
+      POSTGRES_DB:       userdb
+      POSTGRES_USER:     devops
+      POSTGRES_PASSWORD: devops123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # data persists across restarts
+    ports:
+      - "5432:5432"                  # expose to host so you can connect via psql/DBeaver
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devops -d userdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ── User Service ─────────────────────────────────────────────────────────────
+  user-service:
+    build:
+      context: ./services/user-service
+      target: runtime               # use the 'runtime' stage from the Dockerfile
+    container_name: devops-user-service
+    environment:
+      DATABASE_URL: postgresql://devops:devops123@db:5432/userdb
+    ports:
+      - "8001:8001"
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy  # wait for postgres to accept connections
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ── API Gateway ──────────────────────────────────────────────────────────────
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      target: runtime
+    container_name: devops-api-gateway
+    environment:
+      USER_SERVICE_URL: http://user-service:8001
+    ports:
+      - "8000:8000"
+    networks:
+      - internal
+    depends_on:
+      user-service:
+        condition: service_healthy  # wait for user-service to pass its health check
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ── Load Simulator ───────────────────────────────────────────────────────────
+  load-simulator:
+    build:
+      context: ./services/load-simulator
+      target: runtime
+    container_name: devops-load-simulator
+    environment:
+      GATEWAY_URL:      http://api-gateway:8000
+      REQUEST_INTERVAL: "0.8"
+      STARTUP_DELAY:    "8"
+    networks:
+      - internal
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    restart: unless-stopped
+
+# ── Networks ────────────────────────────────────────────────────────────────────
+networks:
+  internal:
+    driver: bridge
+    name: devops-network
+
+# ── Volumes ─────────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    name: devops-postgres-data
