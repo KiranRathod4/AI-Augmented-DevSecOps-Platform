@@ -1,3 +1,11 @@
+# k8s/user-service.yaml
+#
+# FIX: sqlite:///./test.db (relative path) fails in K8s because the container
+# filesystem is not writable by default. Solution: mount an emptyDir volume at
+# /data and use an absolute path sqlite:////data/test.db (4 slashes = absolute).
+# emptyDir is ephemeral — it's wiped on pod restart — which is fine for
+# the Minikube CI smoke test. Phase 3 replaces this with RDS PostgreSQL.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,25 +26,39 @@ spec:
     spec:
       containers:
         - name: user-service
-          # Image tag is replaced by CI using sed before kubectl apply
+          # Image tag is replaced by sed in the CI deploy job
           image: ghcr.io/YOUR_GITHUB_USERNAME/user-service:latest
           ports:
             - containerPort: 8001
+
           env:
             - name: DATABASE_URL
-              value: "sqlite:///./test.db"   # simplified for Minikube; real DB in Phase 3
+              # 4 slashes = absolute path: sqlite:// + // + /data/test.db
+              # /data is the emptyDir volume mounted below — always writable
+              value: "sqlite:////data/test.db"
+
+          volumeMounts:
+            - name: sqlite-data
+              mountPath: /data # writable directory for the DB file
+
           livenessProbe:
             httpGet:
               path: /health
               port: 8001
-            initialDelaySeconds: 15
+            initialDelaySeconds: 20 # give app time to create the DB file
             periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+
           readinessProbe:
             httpGet:
               path: /health
               port: 8001
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10 # wait for startup before routing traffic
             periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
           resources:
             requests:
               memory: "64Mi"
@@ -44,6 +66,12 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "200m"
+
+      volumes:
+        - name: sqlite-data
+          emptyDir: {} # ephemeral — fine for CI smoke test
+            # Phase 3: replace with RDS PostgreSQL
+
 ---
 apiVersion: v1
 kind: Service
