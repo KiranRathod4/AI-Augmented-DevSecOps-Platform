@@ -1,13 +1,24 @@
 # services/api-gateway/tests/test_main.py
 
+# import os
+# from unittest.mock import Mock
+# # Import the app — this triggers the module-level code in main.py
+# import sys
+# from unittest.mock import AsyncMock, Mock, patch
+
+# from fastapi.testclient import TestClient
+
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+# from main import app
+
+
 import os
-from unittest.mock import Mock
-# Import the app — this triggers the module-level code in main.py
 import sys
 from unittest.mock import AsyncMock, Mock, patch
 
 from fastapi.testclient import TestClient
 
+# Import the app — this triggers the module-level code in main.py
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from main import app
 
