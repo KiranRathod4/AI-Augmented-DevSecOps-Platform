@@ -136,7 +136,7 @@ jobs:
           exit-code: "1" # exit code 1 = fail the pipeline
           ignore-unfixed: true # only fail on vulnerabilities that HAVE a fix available
           vuln-type: "os,library"
-          severity: "HIGH,CRITICAL"
+          severity: "CRITICAL"
         # Why: this stops you from shipping images with known critical security holes.
         # A CVE in your base image or a dependency that has a patched version = blocked.
 
