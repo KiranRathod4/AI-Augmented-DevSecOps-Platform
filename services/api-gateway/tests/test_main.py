@@ -1,10 +1,10 @@
 # services/api-gateway/tests/test_main.py
 
 import os
-
+from unittest.mock import Mock
 # Import the app — this triggers the module-level code in main.py
 import sys
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 from fastapi.testclient import TestClient
 
@@ -77,7 +77,7 @@ class TestProxyRoutes:
         with patch("main.httpx.AsyncClient") as mock_client_cls:
             mock_response = AsyncMock()
             mock_response.status_code = 200
-            mock_response.json = AsyncMock(return_value=mock_users)
+            mock_response.json = Mock(return_value=mock_users)
 
             mock_client = AsyncMock()
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)
