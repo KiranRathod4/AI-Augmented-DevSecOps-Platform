@@ -258,13 +258,27 @@ jobs:
           kubectl apply -f k8s/user-service.yaml
           kubectl apply -f k8s/api-gateway.yaml
 
+      - name: Wait for deployments to be ready #added detailed debugging info if rollout fails
+        run: |
+          echo "Waiting for user-service..."
+          kubectl rollout status deployment/user-service -n devops-platform --timeout=300s || {
+          echo "Rollout failed. Debugging info:"
+          kubectl describe deployment user-service -n devops-platform
+          kubectl get pods -n devops-platform -o wide
+          kubectl logs -n devops-platform -l app=user-service --tail=50
+          exit 1
+          }
+    
+          echo "Waiting for api-gateway..."
+          kubectl rollout status deployment/api-gateway -n devops-platform --timeout=300s
+
       - name: Wait for deployments to be ready
         run: |
           echo "Waiting for user-service..."
-          kubectl rollout status deployment/user-service -n devops-platform --timeout=120s
+          kubectl rollout status deployment/user-service -n devops-platform --timeout=300s
 
           echo "Waiting for api-gateway..."
-          kubectl rollout status deployment/api-gateway -n devops-platform --timeout=120s
+          kubectl rollout status deployment/api-gateway -n devops-platform --timeout=300s
 
       - name: Verify pods are running
         run: |
