@@ -100,10 +100,10 @@ async def proxy(method: str, url: str, **kwargs):
             return response.json()
         except httpx.TimeoutException:
             logger.error(f"Timeout calling {url}")
-            raise HTTPException(status_code=504, detail="Upstream service timed out")
+            raise HTTPException(status_code=504, detail="Upstream service timed out") from None
         except httpx.RequestError as exc:
             logger.error(f"Cannot reach {url}: {exc}")
-            raise HTTPException(status_code=503, detail="Upstream service unavailable")
+            raise HTTPException(status_code=503, detail="Upstream service unavailable") from exc
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
 @app.get("/health", tags=["ops"])

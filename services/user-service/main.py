@@ -144,12 +144,12 @@ async def create_user(payload: UserCreate, db: Session = Depends(get_db)):
     try:
         db.commit()
         db.refresh(db_user)
-    except IntegrityError:
+    except IntegrityError as exc:
         db.rollback()
         raise HTTPException(
-            status_code=409,
-            detail=f"A user with email '{payload.email}' already exists",
-        )
+        status_code=409,
+        detail=f"A user with email '{payload.email}' already exists",
+    ) from exc
 
     USERS_CREATED_TOTAL.inc()
     ACTIVE_USERS_GAUGE.inc()
