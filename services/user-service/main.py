@@ -3,17 +3,15 @@
 import logging
 import time
 from contextlib import asynccontextmanager
-from typing import List, Optional
-
-from fastapi import FastAPI, HTTPException, Depends, Request
-from fastapi.responses import Response
-from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
-from pydantic import BaseModel, EmailStr, field_validator
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
 from database import get_db, init_db
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import Response
 from models import User
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
+from pydantic import BaseModel, field_validator
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -79,7 +77,7 @@ class UserResponse(BaseModel):
         )
 
 class UserListResponse(BaseModel):
-    users: List[UserResponse]
+    users: list[UserResponse]
     total: int
 
 # ── App ────────────────────────────────────────────────────────────────────────

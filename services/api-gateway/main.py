@@ -1,15 +1,15 @@
 # services/api-gateway/main.py
 
+import logging
 import os
 import time
-import logging
 from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(

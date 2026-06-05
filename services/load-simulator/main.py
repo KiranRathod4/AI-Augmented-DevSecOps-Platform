@@ -4,7 +4,6 @@ import asyncio
 import logging
 import os
 import random
-import time
 
 import httpx
 
@@ -50,7 +49,7 @@ async def action_create_user(client: httpx.AsyncClient) -> None:
                 created_ids.pop(0)
             logger.info(f"CREATE  user id={user_id} name='{name}'  ✓")
         elif r.status_code == 409:
-            logger.debug(f"CREATE  duplicate email, skipped")
+            logger.debug("CREATE  duplicate email, skipped")
         else:
             logger.warning(f"CREATE  unexpected status {r.status_code}")
     except Exception as e:

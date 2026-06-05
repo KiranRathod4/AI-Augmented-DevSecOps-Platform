@@ -1,8 +1,7 @@
 # services/user-service/models.py
 
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, func
 from database import Base
+from sqlalchemy import Column, DateTime, Integer, String, func
 
 
 class User(Base):
