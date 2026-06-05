@@ -1,6 +1,6 @@
 # services/user-service/main.py
-
 import logging
+import os
 import time
 from contextlib import asynccontextmanager
 
@@ -81,8 +81,6 @@ class UserListResponse(BaseModel):
     total: int
 
 # ── App ────────────────────────────────────────────────────────────────────────
-import os
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("User Service starting")
@@ -94,7 +92,7 @@ async def lifespan(app: FastAPI):
     logger.info("User Service ready")
     yield
     logger.info("User Service shutting down")
-    
+
 app = FastAPI(
     title="User Service",
     description="Owns user data, backed by PostgreSQL",

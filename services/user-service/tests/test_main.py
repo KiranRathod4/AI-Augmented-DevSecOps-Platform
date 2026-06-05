@@ -12,8 +12,9 @@ from sqlalchemy.pool import StaticPool
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 os.environ["TESTING"] = "true"
-from database import Base, get_db
-from main import app
+
+from database import Base, get_db  # noqa: E402
+from main import app  # noqa: E402
 
 # ── In-memory SQLite for tests ─────────────────────────────────────────────────
 # StaticPool: same connection shared across the test (needed for in-memory SQLite)
