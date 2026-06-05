@@ -11,6 +11,7 @@ from sqlalchemy.pool import StaticPool
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+os.environ["TESTING"] = "true"
 from database import Base, get_db
 from main import app
 

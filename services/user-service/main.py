@@ -81,14 +81,20 @@ class UserListResponse(BaseModel):
     total: int
 
 # ── App ────────────────────────────────────────────────────────────────────────
+import os
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("User Service starting — initialising database")
-    init_db()
+    logger.info("User Service starting")
+
+    if os.getenv("TESTING") != "true":
+        logger.info("Initialising PostgreSQL database")
+        init_db()
+
     logger.info("User Service ready")
     yield
     logger.info("User Service shutting down")
-
+    
 app = FastAPI(
     title="User Service",
     description="Owns user data, backed by PostgreSQL",
